@@ -7,7 +7,7 @@ public class Main{
 	}
 	
 	public static void main(String args[]) throws Exception
-	{
+	{	
 		
 		print("Lisp Interpreter");
 		
@@ -15,7 +15,8 @@ public class Main{
 		while(true){
 			
 			//sc.nextLine();
-			InterpreteLisp.read();
+			InterpreteLisp interpreter = InterpreteLisp.interpreterLisp();
+			interpreter.read();
 		}
 	}
 }
