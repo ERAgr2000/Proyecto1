@@ -1,4 +1,4 @@
-//Elder Guzmna
+//Elder Guzman
 //19628
 //Algoritmos y Estructura de Datos
 
@@ -752,9 +752,12 @@ public class InterpreteLisp{
 					}
 				}
 				//Por le caso especial ( ) que es atom y lista
-				else if(strList[1].substring(1,strList[1].length()-1).trim() == "")
+				else if(strList[1].length() > 1)
 				{
-					respuesta = "T";
+					if(strList[1].substring(1,strList[1].length()-1).trim() == "")
+					{
+						respuesta = "T";
+					}
 				}
 				//Si se debe evaluar y no es el caso especial
 				else
@@ -852,7 +855,15 @@ public class InterpreteLisp{
 					}
 					else
 					{
-						respuesta = strList[strList.length-1];
+						if(isnumber(strList[strList.length-1]) )
+						{
+							Float resultado = Float.parseFloat(strList[strList.length-1]);
+							respuesta = resultado.toString();
+						}
+						else
+						{
+							respuesta = strList[strList.length-1];
+						}
 					}
 					
 				}
