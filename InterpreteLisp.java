@@ -31,6 +31,7 @@ public class InterpreteLisp{
 		}
 	}
 	
+	
 	//Treemap para el almacenamineto de funciones y variables.
 	TreeMap<String, String[]> functions ;
 	TreeMap<String, String> assigned_variables ;
@@ -104,24 +105,49 @@ public class InterpreteLisp{
 		return true;
 	}
 	
-	//Para dividir el enunciado principal en enunciados
+	//Para dividir el enunciado principal en varios enunciados para su trabajo
 	private String[] split_in_statements(String texto)
 	{
 		try{
+			
+			//Variables de almacenamiento
 			String txt = "";
 			ArrayList<String> comandos = new ArrayList();
 			int prubea = 0;
 			boolean all = false;
 			boolean quote = false;
 			texto = texto.trim();
-
+			
+			//Dado que el trabajo se planteo con ' y no quote, esto se encarga de reemplazar todos los quote por '
+			String[] reemplazo = texto.split(" ");
+			String reemplazado = "";
+			for(int i = 0; i < reemplazo.length; i = i + 1)
+			{
+				if(reemplazo[i].length() > 4)
+				{
+					if(reemplazo[i].substring(0,5).equalsIgnoreCase("quote"))
+					{
+						reemplazo[i] = "\'" + reemplazo[i].substring(5);
+					}
+				}
+				reemplazado = reemplazado + " " + reemplazo[i];
+			}
+			
+			texto = reemplazado;
+			
 			//Algoritmos de division en diferentes declaraiones
+			//Se basa en recorrer el string caracter por caracter
 			for(int i = 0; i < texto.length(); i += 1 )
 			{
 				
+				//Caracter a analizar
 				Character caracter = texto.charAt(i);
 				
-				
+				//En caso sea un quote
+				if(txt.equalsIgnoreCase("quote"))
+				{
+					txt = "\'";
+				}
 				if(caracter == '\'' && (prubea == 0))
 				{
 
@@ -230,10 +256,7 @@ public class InterpreteLisp{
 					txt = txt + caracter.toString();
 				}
 				
-				if(txt.equalsIgnoreCase("quote"))
-				{
-					txt = "\'";
-				}
+				
 				if(prubea == 0 && all && (caracter != '\'') && !txt.equals("\'"))
 				{
 					//print("6");
@@ -243,15 +266,17 @@ public class InterpreteLisp{
 				}
 			}
 			
+			//Por si falta un ultimo comando no añadido.
 			if(!txt.equals(""))
 			{
 				comandos.add(txt);
 			}
 			
+			//Transforma el ArrayList en Array, dado que eso se utiliza
 			String[] arrStr = new String[comandos.size()]; 
 			arrStr = comandos.toArray(arrStr); 
-			//System.out.println(arrStr.length);
-			//print(arrStr);
+			
+			//se retorna divido en statements
 			return arrStr;
 		
 		}catch(Exception e)
@@ -261,13 +286,14 @@ public class InterpreteLisp{
 		return new String[1];
 	}
 	
+	//Es el metodo public para la ejecucion del interprete, especialmente por el scanner y su reinicio.
 	public void read()
 	{
 		try
 		{			
 			Scanner sc= new Scanner(System.in);
 			String texto = sc.nextLine();
-			print( principal(texto,false, assigned_variables) ); //new TreeMap<String, String>()) );
+			print( principal(texto,false, assigned_variables) );
 			
 		}
 		catch(Exception e)
@@ -277,6 +303,7 @@ public class InterpreteLisp{
 		
 	}
 	
+	//Verifica que no se cree una variable o funcion con nombre de funcion reservado
 	private boolean nofunc(String name, boolean isvar)
 	{
 		if(name.equalsIgnoreCase("setq") )
@@ -338,6 +365,7 @@ public class InterpreteLisp{
 		
 	}
 	
+	//Verifica que no se cree una variable o funcion con nombre de variable reservado
 	private boolean noVar(String var, boolean isfun)
 	{
 		if( isnumber(var) )
@@ -356,12 +384,15 @@ public class InterpreteLisp{
 		
 	}
 	
+	//Es el programa principal, recive lo ingresado por el usuario, si se reutiliza por definicion de funcion, las variables a utilizar en esta instancia.
 	public String principal(String texto, boolean defunction, TreeMap<String, String> variables)
 	{
 		try
 		{
+			//Variables de almacenamiento
 			String respuesta = "Default";
 			texto = texto.trim();
+			
 			//Evita que de error por ser string vacio
 			if( texto == null || texto.length() == 0  )
 			{
@@ -379,13 +410,7 @@ public class InterpreteLisp{
 			//Separa el texto en una lista de strings por enunciado
 			String[] strList = split_in_statements(texto);
 			
-			for(int i = 0; i < strList.length; i= i+1)
-			{
-				//System.out.println(strList[i]);/
-				
-			}
-			
-			
+			//Reemplazo de variables por sus valores
 			if(defunction)
 			{
 				for(int i = 0; i < strList.length; i= i+1)
@@ -397,34 +422,20 @@ public class InterpreteLisp{
 					}
 				}
 			}
-			/*
+			
 			for(int i = 0; i < strList.length; i = i+1)
 			{
-				//System.out.println( variables.containsKey(strList[i]) );
-				//print("                a" + strList[i]);
-				//System.out.println( !(strList[0].equals("setq") && (i%2  == 1)) );
-				if( assigned_variables.containsKey(strList[i]) && !(strList[0].equals("setq") && (i%2  == 1)) )
-				{
-					strList[i] = assigned_variables.get(strList[i]);
-					//print("entro " + strList[i]);
-				}
-				//print("                b" + strList[i]);
-			}
-			*/
-			for(int i = 0; i < strList.length; i = i+1)
-			{
-				//System.out.println( variables.containsKey(strList[i]) );
-				//print("                a" + strList[i]);
-				//System.out.println( !(strList[0].equals("setq") && (i%2  == 1)) );
+				
 				if( variables.containsKey(strList[i]) && !(strList[0].equals("setq") && (i%2  == 1)) )
 				{
 					strList[i] = variables.get(strList[i]);
-					//print("entro " + strList[i]);
+					
 				}
-				//print("                b" + strList[i]);
+				
 			}
 			
-			//Para las 5 operaciones basicas
+			//Verifica que predicado se usara.
+			//Para las operaciones aritmetica, verifica que se numero y cicla para que se recorra todos los numeros.
 			if(strList[0].equals("+"))
 			{
 				Float resultado = 0f;
@@ -546,6 +557,7 @@ public class InterpreteLisp{
 				
 				respuesta = resultado.toString();
 			}
+			//Verifica que sean numero a comparar y luego compara los dos primeros numeros
 			else if(strList[0].equals("<"))
 			{
 				
@@ -595,6 +607,7 @@ public class InterpreteLisp{
 			}
 			else if(strList[0].equalsIgnoreCase("setq"))
 			{
+				//Se verifica que el numero de variable sea igual al de los valores
 				if( (strList.length%2) != 1)
 				{
 					throw new Exception("Es imposible asignar valor al menos a una variable.");
@@ -602,6 +615,7 @@ public class InterpreteLisp{
 				else
 				{
 					respuesta = "";
+					//Comienza el proceso de asignacion, asegurandose de que no sean reservadas.
 					for(int i = 1; i < strList.length; i = i + 2)
 					{
 						String to_assign = strList[i+1];
@@ -624,10 +638,13 @@ public class InterpreteLisp{
 			}
 			else if(strList[0].equalsIgnoreCase("defun"))
 			{
+				//Toma el nombre de la funcion
 				String name_function = strList[1];
 				
+				//Almacena los parametros y el predicado
 				String[] info_function = new String[2];
 				
+				//Verifica que no sea reservada
 				if(nofunc(name_function, false))
 				{
 					throw new Exception("Nombre de funcion reservada por el sistema");
@@ -640,6 +657,7 @@ public class InterpreteLisp{
 				}
 				else if(functions.containsKey(strList[1]) )
 				{
+					//Avisa si esta override
 					respuesta = "Alerta: La funcion se sobreescribira.";
 				}	
 				
@@ -651,14 +669,17 @@ public class InterpreteLisp{
 			}
 			else if(strList[0].equalsIgnoreCase("equal"))
 			{
+				//Comprueba que solo sean 2 parametros
 				if(strList.length != 3)
 				{
 					throw new Exception("Error en funcion equal: la operacion es binaria");
 				}
 				
+				//Evalua ambos parametros
 				String par1 = principal(strList[1] , false, variables);
 				String par2 = principal(strList[2] , false, variables);
 				
+				//Compara los parametros
 				if(par1.equals(par2))
 				{
 					respuesta = "T";
@@ -673,13 +694,14 @@ public class InterpreteLisp{
 			{
 				int i = 1;
 				
+				//Nos dice que evalueamos todas las condicionales hasta que encontremos una verdadera
 				while( i < strList.length)
 				{
 					String[] conditional_sentence = split_in_statements(strList[i]);
 					
 					String conditional = principal(conditional_sentence[0], defunction, variables);
 					
-					//print("Cond sentece" + conditional_sentence[0]);
+					//Verifica el valor del condicional y continua la siguiente en NIL, en T ejecuta el predicado y lo devuelve.
 					
 					if(conditional.equals("T"))
 					{
@@ -701,13 +723,15 @@ public class InterpreteLisp{
 			}
 			else if(strList[0].equalsIgnoreCase("atom"))
 			{
-				
+				//Encaso de mas de un paramtro
 				if(strList.length != 2)
 				{
 					throw new Exception("Parametros incorrectos");
 				}
+				//En caso sea un quote, que por no evaluarse verifica que sin evaluar sea atom
 				else if(strList[1].charAt(0) == '\'')
 				{
+					
 					String texto_verify  = "";
 					for(int i = 1; i < strList[1].length(); i = i + 1)
 					{
@@ -727,11 +751,13 @@ public class InterpreteLisp{
 						throw new Exception("Error al evaluar la funcion atom. Code: 202001");
 					}
 				}
-				else if(strList[1].equals("( )"))
+				//Por le caso especial ( ) que es atom y lista
+				else if(strList[1].substring(1,strList[1].length()-1).trim() == "")
 				{
 					respuesta = "T";
 				}
-				else//(strList[1].charAt(0) == '(')
+				//Si se debe evaluar y no es el caso especial
+				else
 				{
 					String texto_verify = principal(strList[1], defunction, variables);
 					String[] texto_splited = split_in_statements(texto_verify);
@@ -752,7 +778,7 @@ public class InterpreteLisp{
 			}
 			else if(strList[0].equalsIgnoreCase("list"))
 			{
-				
+				//devuelve la lista de los valores
 				if(strList.length == 1)
 				{
 					respuesta = "NIL";
@@ -802,6 +828,7 @@ public class InterpreteLisp{
 			}
 			else
 			{
+				//Si no es una funcion reservada verifica que exista y la ejecuta o si no es funcion solo devuelve el valor
 				String info = "";
 				if(!functions.containsKey(strList[0]))
 				{
