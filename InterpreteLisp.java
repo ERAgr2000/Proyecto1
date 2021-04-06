@@ -2,6 +2,14 @@
 //19628
 //Algoritmos y Estructura de Datos
 
+/*
+Funciones para fibonacci y factorial, respectivamente:
+
+	(defun fib (a) (cond ((< a 2) (1)) ((> a 1) ( + (fib (- a 1)) (fib (- a 2))) ) ))
+
+	(defun fac (a) (cond ((< a 2) (1)) ((> a 1) ( * (fac (- a 1)) a )) ))
+*/
+
 import java.io.*;
 import java.util.*;
 import java.lang.*;
@@ -9,6 +17,7 @@ import java.util.ArrayList;
 
 public class InterpreteLisp{
 	
+	//Funciones de conveniencia
 	public static void print(String a){
 		System.out.println(a);
 	}
@@ -22,35 +31,27 @@ public class InterpreteLisp{
 		}
 	}
 	
-	//Treemap para el almacenamineto de funciones.
+	//Treemap para el almacenamineto de funciones y variables.
 	TreeMap<String, String[]> functions ;
 	TreeMap<String, String> assigned_variables ;
 	
+	//Se emplea un modelo singleton
 	private static InterpreteLisp interpreter = new InterpreteLisp();
-	
-	private InterpreteLisp()
-	{
-		
-		assigned_variables = new TreeMap<String, String>();
-		functions = new TreeMap<String, String[]>();
-		functions.put("atom", new String[0]);
-		functions.put("list", new String[0]);
-		functions.put("cond", new String[0]);
-		functions.put("equal", new String[0]);
-		/*
-		functions.put("setq", new String[0]);
-		String[] moment = new String[2];
-		moment[0] = "(a b)";
-		moment[1] = "(+ a b)";
-		functions.put("sumar", moment);
-		//functions.put(">", );
-		*/
-	}
 	
 	public static InterpreteLisp interpreterLisp()
 	{
 		return interpreter;
 	}
+	
+	//Constructor donde se inicializan los treemaps.
+	private InterpreteLisp()
+	{
+		
+		assigned_variables = new TreeMap<String, String>();
+		functions = new TreeMap<String, String[]>();
+		
+	}
+	
 	//Verifica si un string es un numero
 	private boolean isnumber(String texto)
 	{
@@ -77,7 +78,7 @@ public class InterpreteLisp{
 		return true;
 	}
 	
-	//Verifica si no faltan parentesis
+	//Verifica si todos los parentesis estan cerrados y abiertos.
 	private boolean parentesis(String texto)
 	{
 		int abrir_parentesis = 0;
@@ -250,7 +251,7 @@ public class InterpreteLisp{
 			String[] arrStr = new String[comandos.size()]; 
 			arrStr = comandos.toArray(arrStr); 
 			//System.out.println(arrStr.length);
-			print(arrStr);
+			//print(arrStr);
 			return arrStr;
 		
 		}catch(Exception e)
@@ -266,17 +267,17 @@ public class InterpreteLisp{
 		{			
 			Scanner sc= new Scanner(System.in);
 			String texto = sc.nextLine();
-			print( principal(texto,false, new TreeMap<String, String>()) );
+			print( principal(texto,false, assigned_variables) ); //new TreeMap<String, String>()) );
 			
 		}
 		catch(Exception e)
 		{
-			print("error en read: " + e.toString());
+			print("Error en read: " + e.toString());
 		}
 		
 	}
 	
-	private boolean nofunc(String name)
+	private boolean nofunc(String name, boolean isvar)
 	{
 		if(name.equalsIgnoreCase("setq") )
 		{
@@ -326,6 +327,30 @@ public class InterpreteLisp{
 		{
 			return true;
 		}
+		if(!isvar)
+		{
+			if(noVar(name, true))
+			{
+				return true;
+			}
+		}
+		return false;
+		
+	}
+	
+	private boolean noVar(String var, boolean isfun)
+	{
+		if( isnumber(var) )
+		{
+			return true;
+		}
+		else if(!isfun )
+		{
+			if( nofunc(var , true))
+			{
+				return true;
+			}
+		}
 		
 		return false;
 		
@@ -356,7 +381,8 @@ public class InterpreteLisp{
 			
 			for(int i = 0; i < strList.length; i= i+1)
 			{
-				//System.out.println(strList[i]);
+				//System.out.println(strList[i]);/
+				
 			}
 			
 			
@@ -364,19 +390,38 @@ public class InterpreteLisp{
 			{
 				for(int i = 0; i < strList.length; i= i+1)
 				{
+					
 					if(variables.containsKey(strList[i]))
 					{
 						strList[i] = variables.get(strList[i]);
 					}
 				}
 			}
-			
+			/*
 			for(int i = 0; i < strList.length; i = i+1)
 			{
-				if(assigned_variables.containsKey(strList[i]))
+				//System.out.println( variables.containsKey(strList[i]) );
+				//print("                a" + strList[i]);
+				//System.out.println( !(strList[0].equals("setq") && (i%2  == 1)) );
+				if( assigned_variables.containsKey(strList[i]) && !(strList[0].equals("setq") && (i%2  == 1)) )
 				{
 					strList[i] = assigned_variables.get(strList[i]);
+					//print("entro " + strList[i]);
 				}
+				//print("                b" + strList[i]);
+			}
+			*/
+			for(int i = 0; i < strList.length; i = i+1)
+			{
+				//System.out.println( variables.containsKey(strList[i]) );
+				//print("                a" + strList[i]);
+				//System.out.println( !(strList[0].equals("setq") && (i%2  == 1)) );
+				if( variables.containsKey(strList[i]) && !(strList[0].equals("setq") && (i%2  == 1)) )
+				{
+					strList[i] = variables.get(strList[i]);
+					//print("entro " + strList[i]);
+				}
+				//print("                b" + strList[i]);
 			}
 			
 			//Para las 5 operaciones basicas
@@ -552,22 +597,29 @@ public class InterpreteLisp{
 			{
 				if( (strList.length%2) != 1)
 				{
-					throw new Exception("Es imposible asignar valor a una variable.");
+					throw new Exception("Es imposible asignar valor al menos a una variable.");
 				}
 				else
 				{
+					respuesta = "";
 					for(int i = 1; i < strList.length; i = i + 2)
 					{
 						String to_assign = strList[i+1];
 						Character evaluate = to_assign.charAt(0);
 						
+						if(noVar( strList[i], false))
+						{
+							throw new Exception(strList[i] + " que se intenta asignar esta reservada.");
+						}
 						if(evaluate == '(')
 						{
 							to_assign = principal(to_assign, defunction, variables);
+							
 						}
 						
-						assigned_variables.put(strList[i], to_assign);
+						respuesta = respuesta + "\n Variable: " + strList[i] + " valor: " + to_assign + ". el valor anterior era: " + assigned_variables.put(strList[i], to_assign);
 					}
+					
 				}
 			}
 			else if(strList[0].equalsIgnoreCase("defun"))
@@ -576,7 +628,7 @@ public class InterpreteLisp{
 				
 				String[] info_function = new String[2];
 				
-				if(nofunc(name_function))
+				if(nofunc(name_function, false))
 				{
 					throw new Exception("Nombre de funcion reservada por el sistema");
 				}
@@ -599,6 +651,22 @@ public class InterpreteLisp{
 			}
 			else if(strList[0].equalsIgnoreCase("equal"))
 			{
+				if(strList.length != 3)
+				{
+					throw new Exception("Error en funcion equal: la operacion es binaria");
+				}
+				
+				String par1 = principal(strList[1] , false, variables);
+				String par2 = principal(strList[2] , false, variables);
+				
+				if(par1.equals(par2))
+				{
+					respuesta = "T";
+				}
+				else
+				{
+					respuesta = "NIL";
+				}
 				
 			}
 			else if(strList[0].equalsIgnoreCase("cond"))
@@ -609,16 +677,20 @@ public class InterpreteLisp{
 				{
 					String[] conditional_sentence = split_in_statements(strList[i]);
 					
-					String conditional = principal(conditional_sentence[0], false, variables);
+					String conditional = principal(conditional_sentence[0], defunction, variables);
+					
+					//print("Cond sentece" + conditional_sentence[0]);
 					
 					if(conditional.equals("T"))
 					{
-						respuesta = principal(conditional_sentence[1], false, variables);
+						//print(conditional_sentence[1]);
+						respuesta = principal(conditional_sentence[1], defunction, variables);
 						break;
 					}
 					else if(conditional.equals("NIL"))
 					{
 						i = i + 1;
+						
 					}
 					else
 					{
@@ -661,7 +733,7 @@ public class InterpreteLisp{
 				}
 				else//(strList[1].charAt(0) == '(')
 				{
-					String texto_verify = principal(strList[1], false, variables);
+					String texto_verify = principal(strList[1], defunction, variables);
 					String[] texto_splited = split_in_statements(texto_verify);
 					if(texto_splited.length > 1)
 					{
@@ -681,6 +753,52 @@ public class InterpreteLisp{
 			else if(strList[0].equalsIgnoreCase("list"))
 			{
 				
+				if(strList.length == 1)
+				{
+					respuesta = "NIL";
+				}
+				else
+				{
+					String respuesta_preliminar = "(";
+					
+					for(int i = 1; i < strList.length; i = i + 1)
+					{
+						if(strList[i].charAt(0) == '\'')
+						{
+							if(i == 1)
+							{
+								
+								respuesta_preliminar = respuesta_preliminar + strList[i].substring(1);
+							
+							}
+							else
+							{
+								
+								respuesta_preliminar = respuesta_preliminar + " " + strList[i].substring(1);
+								
+							}
+						}
+						else
+						{
+							if(i == 1)
+							{
+								
+								respuesta_preliminar = respuesta_preliminar + principal(strList[i], false, variables);
+								
+							}
+							else
+							{
+								
+								respuesta_preliminar = respuesta_preliminar + " " + principal(strList[i], false, variables);
+							
+							}
+						}					
+					}
+					
+					respuesta_preliminar = respuesta_preliminar + ")";
+					
+					respuesta = respuesta_preliminar;
+				}
 			}
 			else
 			{
@@ -688,6 +806,7 @@ public class InterpreteLisp{
 				if(!functions.containsKey(strList[0]))
 				{
 					boolean valid_non_parentesis = true;
+					
 					for(int i = 0; i < strList.length; i = i + 1)
 					{
 						String review = strList[i];
@@ -735,6 +854,10 @@ public class InterpreteLisp{
 					{
 						for(int i = 0; i < func_info.length; i = i+1)
 						{
+							if(func_parameters[i].charAt(0) == '(')
+							{
+								func_parameters[i] = principal(func_parameters[i], false, variables);
+							}
 							parametros_usar.put(func_info[i], func_parameters[i]);
 						}
 					}
@@ -752,3 +875,4 @@ public class InterpreteLisp{
 		}
 	}
 }
+
