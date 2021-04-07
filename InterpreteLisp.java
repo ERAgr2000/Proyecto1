@@ -752,12 +752,11 @@ public class InterpreteLisp{
 					}
 				}
 				//Por le caso especial ( ) que es atom y lista
-				else if(strList[1].length() > 1)
+				else if(strList[1].length() > 1 && strList[1].substring(1,strList[1].length()-1).trim() == "")
 				{
-					if(strList[1].substring(1,strList[1].length()-1).trim() == "")
-					{
+					
 						respuesta = "T";
-					}
+					
 				}
 				//Si se debe evaluar y no es el caso especial
 				else
@@ -913,4 +912,5 @@ public class InterpreteLisp{
 		}
 	}
 }
+
 
